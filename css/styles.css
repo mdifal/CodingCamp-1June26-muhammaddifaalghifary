@@ -219,6 +219,29 @@ header[role="banner"] {
   width: 100%;
 }
 
+/* Tambahan untuk sort controls */
+#todo-sort-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.task-sort-btn {
+  background-color: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  font-size: 0.8125rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.task-sort-btn:hover:not(:disabled) {
+  background-color: var(--border);
+  color: var(--fg);
+}
+
 #todo-list {
   list-style: none;
 }

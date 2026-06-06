@@ -456,7 +456,7 @@ const TimerWidget = {
 };
 
 /* ============================================================
-   TodoWidget  — Tasks 5.1 – 5.4
+   TodoWidget  — Tasks 5.1 – 5.4 (with sorting & duplicate prompt)
    ============================================================ */
 
 /**
@@ -643,6 +643,7 @@ const TodoWidget = {
   /**
    * Validates and adds a new task.
    * Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 8.1–8.6
+   * Skenario Duplikasi: Pengecekan nama ganda dengan konfirmasi sebelum penambahan.
    * @param {string} text  Raw input value from the user.
    * @returns {boolean} true on success, false on validation failure or storage error.
    */
@@ -682,6 +683,15 @@ const TodoWidget = {
         errEl.hidden = false;
       }
       return false;
+    }
+
+    // Pengecekan Tugas Ganda (Case-insensitive)
+    const isDuplicate = _tasks.some(task => task.text.toLowerCase() === trimmed.toLowerCase());
+    if (isDuplicate) {
+      const confirmAdd = confirm(`Tugas dengan nama "${trimmed}" sudah ada di daftar. Apakah Anda tetap ingin menambahkannya?`);
+      if (!confirmAdd) {
+        return false; // Batalkan penambahan tugas
+      }
     }
 
     // Create the new task object
@@ -803,6 +813,30 @@ const TodoWidget = {
       _tasks = snapshot;
       this._render();
       return;
+    }
+
+    this._render();
+  },
+
+  /**
+   * Mengurutkan daftar tugas berdasarkan alfabetis.
+   * @param {'asc'|'desc'} direction
+   */
+  sortTasks(direction) {
+    const sorted = [..._tasks].sort((a, b) => {
+      return a.text.localeCompare(b.text, undefined, { sensitivity: 'base', numeric: true });
+    });
+
+    if (direction === 'desc') {
+      sorted.reverse();
+    }
+
+    // Salin snapshot untuk rollback jika gagal simpan
+    const snapshot = [..._tasks];
+    _tasks = sorted;
+
+    if (!this._persist()) {
+      _tasks = snapshot;
     }
 
     this._render();
@@ -1170,6 +1204,17 @@ const App = {
           todoAddErr.textContent = '';
         }
       });
+    }
+
+    // Wire todo sorting buttons
+    const sortAscBtn  = document.getElementById('todo-sort-asc');
+    const sortDescBtn = document.getElementById('todo-sort-desc');
+
+    if (sortAscBtn) {
+      sortAscBtn.addEventListener('click', () => TodoWidget.sortTasks('asc'));
+    }
+    if (sortDescBtn) {
+      sortDescBtn.addEventListener('click', () => TodoWidget.sortTasks('desc'));
     }
 
     LinksWidget.init();
